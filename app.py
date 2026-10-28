@@ -1,8 +1,9 @@
 """
-Streamlit Web App: A* Search Tree Visualizer (Fast, Interactive & Zero-Lag)
+Streamlit Web App: A* Search Tree Visualizer (Fast, Premium Design & Zero-Lag)
 AI and Soft Computing Academic Project
 """
 import streamlit as st
+import streamlit.components.v1 as components
 import time
 import copy
 import heapq
@@ -15,6 +16,111 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Custom High-End Styling CSS
+st.markdown("""
+<style>
+    /* Global Theme Overrides */
+    .block-container {
+        padding-top: 1.8rem;
+        padding-bottom: 2rem;
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+    
+    /* Metrics Header Cards */
+    div[data-testid="stMetric"] {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        padding: 12px 18px;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+    
+    div[data-testid="stMetricLabel"] {
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        color: #94a3b8 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    div[data-testid="stMetricValue"] {
+        font-size: 1.75rem !important;
+        font-weight: 800 !important;
+        color: #f8fafc !important;
+    }
+    
+    /* Custom Info Cards */
+    .status-card {
+        background: #111827;
+        border: 1px solid #1f2937;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-bottom: 14px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    }
+    
+    .status-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #38bdf8;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+    
+    .queue-chip {
+        display: inline-block;
+        background: #1e293b;
+        color: #e2e8f0;
+        border: 1px solid #3b82f6;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-family: monospace;
+        font-size: 0.88rem;
+        font-weight: 600;
+        margin: 3px;
+    }
+    
+    .stale-chip {
+        display: inline-block;
+        background: #311313;
+        color: #f87171;
+        border: 1px dashed #ef4444;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-family: monospace;
+        font-size: 0.82rem;
+        margin: 2px;
+    }
+    
+    .closed-chip {
+        display: inline-block;
+        background: #1e1e2f;
+        color: #cbd5e1;
+        border: 1px solid #4b5563;
+        padding: 3px 9px;
+        border-radius: 6px;
+        font-family: monospace;
+        font-weight: bold;
+        font-size: 0.85rem;
+        margin: 2px;
+    }
+    
+    .calc-row {
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        background: #090d16;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border-left: 3px solid #38bdf8;
+        color: #e2e8f0;
+        font-size: 0.88rem;
+        margin-bottom: 6px;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # ============================ 1. THE PROBLEM DEFINITION ============================
 GRAPH = {
@@ -33,18 +139,18 @@ HEUR = {
     "F": 3, "G": 0, "H": 4, "I": 2
 }
 
-# SVG coordinates (width=900, height=520)
+# Enlarged SVG coordinates (canvas: 960x560)
 NODE_COORDS = {
-    "S": (450, 60),
-    "A": (230, 180),
-    "B": (670, 180),
-    "C": (120, 310),
-    "D": (340, 310),
-    "E": (560, 310),
-    "F": (780, 310),
-    "H": (120, 450),
-    "G": (450, 450),
-    "I": (780, 450)
+    "S": (480, 68),
+    "A": (240, 195),
+    "B": (720, 195),
+    "C": (120, 335),
+    "D": (360, 335),
+    "E": (600, 335),
+    "F": (840, 335),
+    "H": (120, 485),
+    "G": (480, 485),
+    "I": (840, 485)
 }
 
 START, GOAL = "S", "G"
@@ -95,7 +201,7 @@ def compute_all_steps():
         "parent": {START: None},
         "title": "A* SEARCH — READY",
         "metrics": {"node": START, "g": 0, "h": HEUR[START], "f": HEUR[START]},
-        "expl": "Press 'Next Step' or 'Auto Play' to begin. The start node S will be expanded first.",
+        "expl": "Press **Next ⏭** or **▶ Auto Play** to begin. The start node S will be expanded first.",
         "calc_lines": [f"Start node: {START} | Goal node: {GOAL}", f"f(S) = g(S) + h(S) = 0 + {HEUR[START]} = {HEUR[START]}"]
     })
 
@@ -122,7 +228,7 @@ def compute_all_steps():
                 "parent": dict(parent),
                 "title": f"IGNORING OUTDATED HEAP ENTRY: {n} (f={f})",
                 "metrics": {"node": n, "g": g[n], "h": HEUR[n], "f": f},
-                "expl": f"Node {n} was already closed with a cheaper route. This duplicate entry with f={f} is ignored (lazy deletion).",
+                "expl": f"Node {n} was already closed with a cheaper route. This duplicate entry with f={f} is discarded via lazy deletion.",
                 "calc_lines": [f"Popped stale entry: ({f}, '{n}')", f"Known best cost g({n}) = {g[n]}"]
             })
             continue
@@ -148,7 +254,7 @@ def compute_all_steps():
                 "parent": dict(parent),
                 "title": f"STEP {step_num} — GOAL {n} SELECTED FROM OPEN LIST",
                 "metrics": {"node": n, "g": g[n], "h": 0, "f": g[n]},
-                "expl": f"The goal {n} now has the lowest f={g[n]} in the priority queue. Since h(n) is admissible, no remaining path can be cheaper. A* stops!",
+                "expl": f"The goal {n} now has the lowest f = {g[n]} in the priority queue. Since h(n) is admissible, no remaining path can be cheaper. A* terminates!",
                 "calc_lines": [f"Selected: {n}", f"g({n}) = {g[n]}, h({n}) = 0, f({n}) = {g[n]}"]
             })
             
@@ -316,9 +422,9 @@ def compute_all_steps():
 SNAPSHOTS = compute_all_steps()
 TOTAL_STEPS = len(SNAPSHOTS) - 1
 
-# ============================ 3. SVG TREE RENDERING ============================
+# ============================ 3. ENLARGED SVG TREE RENDERING ============================
 def render_svg_tree(snap):
-    """Generate crisp, hardware-accelerated SVG with modern styling."""
+    """Generate crisp, hardware-accelerated SVG with modern styling and enlarged canvas."""
     curr_n = snap["current_node"]
     closed_set = snap["closed"]
     open_nodes = {n for f, n in snap["open_valid"]}
@@ -327,7 +433,6 @@ def render_svg_tree(snap):
     g_dict = snap["g"]
     is_done = snap["event_kind"] == "done"
     
-    # Path nodes
     path_nodes = set()
     if path_edges:
         for u, v in path_edges:
@@ -336,31 +441,17 @@ def render_svg_tree(snap):
     elif is_done:
         path_nodes = {"S", "A", "D", "G"}
 
-    svg_elements = []
+    svg = []
     
-    # SVG Definition & Styles
-    svg_elements.append('''
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" style="width:100%; height:auto; background: #0e1117; border-radius: 12px; border: 1px solid #2d3748; box-shadow: 0 8px 30px rgba(0,0,0,0.5);">
-      <defs>
-        <marker id="arrow" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#4a5568"/>
-        </marker>
-        <marker id="arrow-gold" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#ecc94b"/>
-        </marker>
-        <marker id="arrow-active" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#ed8936"/>
-        </marker>
-        <filter id="glow-gold" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="6" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
-        <filter id="glow-orange" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="8" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
-      </defs>
-    ''')
+    # SVG Definition & Styles (960x560 canvas)
+    svg.append('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" style="width:100%; height:100%; background: #0b0f19; border-radius: 14px; border: 1px solid #1e293b; box-shadow: 0 10px 35px rgba(0,0,0,0.6);">')
+    svg.append('<defs>')
+    svg.append('<marker id="arrow" viewBox="0 0 10 10" refX="32" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#475569"/></marker>')
+    svg.append('<marker id="arrow-gold" viewBox="0 0 10 10" refX="32" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#fbbf24"/></marker>')
+    svg.append('<marker id="arrow-active" viewBox="0 0 10 10" refX="32" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#f97316"/></marker>')
+    svg.append('<filter id="glow-gold" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>')
+    svg.append('<filter id="glow-orange" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>')
+    svg.append('</defs>')
 
     # Draw Edges
     for u, neighbours in GRAPH.items():
@@ -368,38 +459,32 @@ def render_svg_tree(snap):
         for v, cost in neighbours:
             x2, y2 = NODE_COORDS[v]
             
-            # Check edge status
             is_path = (u, v) in path_edges or (is_done and (u, v) in [("S","A"), ("A","D"), ("D","G")])
             is_active = (active_edge == (u, v))
             
             if is_path:
-                stroke_color = "#ecc94b"
+                stroke_color = "#fbbf24"
                 stroke_width = "4.5"
                 marker = "url(#arrow-gold)"
                 filter_attr = 'filter="url(#glow-gold)"'
             elif is_active:
-                stroke_color = "#ed8936"
-                stroke_width = "3.5"
+                stroke_color = "#f97316"
+                stroke_width = "4"
                 marker = "url(#arrow-active)"
                 filter_attr = 'filter="url(#glow-orange)"'
             else:
                 stroke_color = "#334155"
-                stroke_width = "2"
+                stroke_width = "2.4"
                 marker = "url(#arrow)"
                 filter_attr = ""
 
-            svg_elements.append(
-                f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{stroke_color}" stroke-width="{stroke_width}" marker-end="{marker}" {filter_attr}/>'
-            )
+            svg.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{stroke_color}" stroke-width="{stroke_width}" marker-end="{marker}" {filter_attr}/>')
             
             # Edge Cost Label
             mx, my = (x1 + x2) / 2, (y1 + y2) / 2
-            # Offset slightly to not collide with line
-            ox, oy = (my - y1) * 0.1, (x1 - mx) * 0.1
-            svg_elements.append(f'''
-            <rect x="{mx + ox - 12}" y="{my + oy - 10}" width="24" height="20" rx="4" fill="#1a202c" stroke="{stroke_color}" stroke-width="1"/>
-            <text x="{mx + ox}" y="{my + oy + 4}" fill="#e2e8f0" font-size="12" font-weight="bold" font-family="sans-serif" text-anchor="middle">{cost}</text>
-            ''')
+            ox, oy = (my - y1) * 0.08, (x1 - mx) * 0.08
+            svg.append(f'<rect x="{mx + ox - 14}" y="{my + oy - 12}" width="28" height="24" rx="6" fill="#0f172a" stroke="{stroke_color}" stroke-width="1.2"/>')
+            svg.append(f'<text x="{mx + ox}" y="{my + oy + 4}" fill="#f1f5f9" font-size="13" font-weight="bold" font-family="system-ui, sans-serif" text-anchor="middle">{cost}</text>')
 
     # Draw Nodes
     for node, (x, y) in NODE_COORDS.items():
@@ -408,73 +493,69 @@ def render_svg_tree(snap):
         
         # Determine Node Theme Color
         if is_done and node in path_nodes:
-            bg_color = "#d69e2e"
-            border_color = "#ecc94b"
+            bg_color = "#d97706"
+            border_color = "#fbbf24"
             text_color = "#000"
             glow = 'filter="url(#glow-gold)"'
         elif node == curr_n and snap["event_kind"] not in ("ready", "done"):
-            bg_color = "#dd6b20"
-            border_color = "#fbd38d"
+            bg_color = "#ea580c"
+            border_color = "#fed7aa"
             text_color = "#fff"
             glow = 'filter="url(#glow-orange)"'
         elif node in path_nodes:
-            bg_color = "#d69e2e"
-            border_color = "#ecc94b"
+            bg_color = "#d97706"
+            border_color = "#fbbf24"
             text_color = "#000"
             glow = 'filter="url(#glow-gold)"'
         elif node in closed_set:
-            bg_color = "#9b2c2c"
-            border_color = "#fc8181"
+            bg_color = "#991b1b"
+            border_color = "#f87171"
             text_color = "#fff"
             glow = ""
         elif node in open_nodes:
-            bg_color = "#2b6cb0"
-            border_color = "#63b3ed"
+            bg_color = "#1d4ed8"
+            border_color = "#60a5fa"
             text_color = "#fff"
             glow = ""
         elif node == GOAL and known_g is not None:
-            bg_color = "#6b46c1"
-            border_color = "#b794f4"
+            bg_color = "#7c3aed"
+            border_color = "#c084fc"
             text_color = "#fff"
             glow = ""
         else:
             bg_color = "#1e293b"
             border_color = "#475569"
-            text_color = "#cbd5e1"
+            text_color = "#94a3b8"
             glow = ""
 
         # Outer Pulsing Ring for Active Node
         if node == curr_n and snap["event_kind"] not in ("ready", "done"):
-            svg_elements.append(f'<circle cx="{x}" cy="{y}" r="32" fill="none" stroke="#ed8936" stroke-width="2" stroke-dasharray="4,4" opacity="0.8"/>')
+            svg.append(f'<circle cx="{x}" cy="{y}" r="38" fill="none" stroke="#f97316" stroke-width="2.5" stroke-dasharray="5,5" opacity="0.9"/>')
 
-        # Node Circle
-        svg_elements.append(f'<circle cx="{x}" cy="{y}" r="24" fill="{bg_color}" stroke="{border_color}" stroke-width="3" {glow}/>')
+        # Node Circle (enlarged r=28)
+        svg.append(f'<circle cx="{x}" cy="{y}" r="28" fill="{bg_color}" stroke="{border_color}" stroke-width="3" {glow}/>')
         
         # Node Name & Heuristic inside circle
-        svg_elements.append(f'''
-        <text x="{x}" y="{y - 2}" fill="{text_color}" font-size="15" font-weight="900" font-family="sans-serif" text-anchor="middle">{node}</text>
-        <text x="{x}" y="{y + 13}" fill="{text_color}" font-size="10" font-family="sans-serif" text-anchor="middle" opacity="0.85">h={h_val}</text>
-        ''')
+        svg.append(f'<text x="{x}" y="{y - 2}" fill="{text_color}" font-size="17" font-weight="900" font-family="system-ui, sans-serif" text-anchor="middle">{node}</text>')
+        svg.append(f'<text x="{x}" y="{y + 15}" fill="{text_color}" font-size="11" font-weight="600" font-family="system-ui, sans-serif" text-anchor="middle" opacity="0.9">h={h_val}</text>')
 
         # Floating Badge showing g and f values if known
         if known_g is not None:
             f_val = known_g + h_val
-            badge_y = y - 36
+            badge_y = y - 44
             badge_text = f"g={known_g} | f={f_val}"
-            badge_w = 66
-            svg_elements.append(f'''
-            <rect x="{x - badge_w/2}" y="{badge_y}" width="{badge_w}" height="17" rx="8" fill="#0f172a" stroke="{border_color}" stroke-width="1.2"/>
-            <text x="{x}" y="{badge_y + 12}" fill="#f8fafc" font-size="9.5" font-weight="bold" font-family="monospace" text-anchor="middle">{badge_text}</text>
-            ''')
+            badge_w = 76
+            svg.append(f'<rect x="{x - badge_w/2}" y="{badge_y}" width="{badge_w}" height="20" rx="10" fill="#030712" stroke="{border_color}" stroke-width="1.5"/>')
+            svg.append(f'<text x="{x}" y="{badge_y + 14}" fill="#f8fafc" font-size="10.5" font-weight="bold" font-family="monospace" text-anchor="middle">{badge_text}</text>')
 
-    svg_elements.append('</svg>')
-    return "".join(svg_elements)
+    svg.append('</svg>')
+    return "".join(svg)
 
 # ============================ 4. APPLICATION UI LAYOUT ============================
 
 # Sidebar Controls
 st.sidebar.title("⭐ A* Tree Visualizer")
-st.sidebar.markdown("**Interactive AI & Soft Computing Visualizer**")
+st.sidebar.caption("AI and Soft Computing (AISC) — Step-by-Step Project")
 st.sidebar.divider()
 
 # Session State for Playback
@@ -483,9 +564,10 @@ if "step_idx" not in st.session_state:
 if "playing" not in st.session_state:
     st.session_state.playing = False
 
-# Auto-play tick logic
+# Speed Slider
 speed = st.sidebar.slider("⏱️ Animation Speed (seconds)", min_value=0.3, max_value=2.5, value=1.0, step=0.1)
 
+# Action Buttons
 col_b1, col_b2, col_b3 = st.sidebar.columns(3)
 if col_b1.button("⏮ Prev", use_container_width=True):
     st.session_state.step_idx = max(0, st.session_state.step_idx - 1)
@@ -525,7 +607,7 @@ st.sidebar.markdown("""
 - 🔴 **Red**: Explored (`CLOSED` set)
 - 🔵 **Blue**: Frontier (`OPEN` priority queue)
 - 🟣 **Purple**: Goal Discovered
-- ⚪ **Dark Grey**: Unvisited
+- ⚪ **Dark Slate**: Unvisited
 """)
 
 # Main Content Tabs
@@ -534,53 +616,86 @@ tab_viz, tab_table, tab_viva = st.tabs(["🚀 Interactive Visualizer", "📊 Dry
 snap = SNAPSHOTS[st.session_state.step_idx]
 
 with tab_viz:
-    # Header Banner
-    st.markdown(f"### {snap['title']}")
+    # Header Title
+    st.markdown(f"## {snap['title']}")
     
-    # Top Metrics Cards
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Current Focus Node", snap["metrics"]["node"])
-    c2.metric("Path Cost: g(n)", snap["metrics"]["g"])
-    c3.metric("Heuristic: h(n)", snap["metrics"]["h"])
-    c4.metric("Total Priority: f(n)", snap["metrics"]["f"])
+    # Top Metrics Bar
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Current Focus Node", snap["metrics"]["node"])
+    m2.metric("Path Cost: g(n)", snap["metrics"]["g"])
+    m3.metric("Heuristic: h(n)", snap["metrics"]["h"])
+    m4.metric("Priority: f(n) = g + h", snap["metrics"]["f"])
 
-    # 2-Column Layout: Visualizer on Left, Live Queues on Right
-    col_tree, col_queues = st.columns([1.7, 1.0])
+    # Two Column Layout: Enlarged Graph on Left (65%), Data Panels on Right (35%)
+    col_tree, col_panels = st.columns([1.9, 1.1], gap="medium")
 
     with col_tree:
-        st.markdown(render_svg_tree(snap), unsafe_allow_html=True)
-        st.caption(f"Step {st.session_state.step_idx} of {TOTAL_STEPS} — Hardware-accelerated SVG Rendering")
+        # Render enlarged hardware-accelerated SVG via iframe component to prevent ANY markdown escaping/code blocks
+        svg_content = render_svg_tree(snap)
+        html_wrapper = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body, html {{
+              margin: 0;
+              padding: 0;
+              width: 100%;
+              height: 100%;
+              overflow: hidden;
+              background-color: transparent;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }}
+          </style>
+        </head>
+        <body>
+          {svg_content}
+        </body>
+        </html>
+        """
+        components.html(html_wrapper, height=560, scrolling=False)
+        st.caption(f"📍 Event {st.session_state.step_idx} of {TOTAL_STEPS} | Start: S | Goal: G | Optimal Cost = 9")
 
-    with col_queues:
+    with col_panels:
         # Explanation Card
-        st.info(f"**Explanation:**\n\n{snap['expl']}")
-        
-        # Calculation breakdown
-        with st.container(border=True):
-            st.markdown("#### 🧮 Calculations")
-            for line in snap["calc_lines"]:
-                st.code(line, language="text")
+        st.markdown(f"""
+        <div class="status-card">
+            <div class="status-title">💡 Algorithm Explanation</div>
+            <div style="color: #cbd5e1; font-size: 0.94rem; line-height: 1.5;">{snap['expl']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Calculations Box
+        calc_html = "".join([f'<div class="calc-row">{line}</div>' for line in snap["calc_lines"]])
+        st.markdown(f"""
+        <div class="status-card">
+            <div class="status-title">🧮 Live Calculation</div>
+            {calc_html}
+        </div>
+        """, unsafe_allow_html=True)
 
         # Live Priority Queue OPEN
-        with st.container(border=True):
-            st.markdown("#### 📥 OPEN Priority Queue (`heapq`)")
-            if snap["open_valid"]:
-                valid_str = "  |  ".join([f"**{n}** (f={f})" for f, n in snap["open_valid"]])
-                st.markdown(f"**Active Candidates:**\n\n{valid_str}")
-            else:
-                st.write("*(Empty)*")
-
-            if snap["open_stale"]:
-                stale_str = ", ".join([f"{n} (f={f})" for f, n in snap["open_stale"]])
-                st.warning(f"⚠️ **Outdated Duplicates (Lazy Deletion):** {stale_str}")
+        active_chips = "".join([f'<span class="queue-chip">{n} (f={f})</span>' for f, n in snap["open_valid"]]) if snap["open_valid"] else '<span style="color:#64748b;">(Empty)</span>'
+        stale_chips = f'<div style="margin-top:6px;"><span style="color:#f87171; font-size:0.8rem; font-weight:bold;">⚠️ Ignored Old Entries:</span> ' + "".join([f'<span class="stale-chip">{n} (f={f})</span>' for f, n in snap["open_stale"]]) + '</div>' if snap["open_stale"] else ''
+        st.markdown(f"""
+        <div class="status-card">
+            <div class="status-title">📥 OPEN Priority Queue (heapq)</div>
+            <div>{active_chips}</div>
+            {stale_chips}
+        </div>
+        """, unsafe_allow_html=True)
 
         # Live CLOSED Set
-        with st.container(border=True):
-            st.markdown("#### 🔒 CLOSED Set (Explored)")
-            if snap["order"]:
-                st.markdown(" → ".join([f"`{n}`" for n in snap["order"]]))
-            else:
-                st.write("*(None)*")
+        closed_chips = " → ".join([f'<span class="closed-chip">{n}</span>' for n in snap["order"]]) if snap["order"] else '<span style="color:#64748b;">(None)</span>'
+        st.markdown(f"""
+        <div class="status-card">
+            <div class="status-title">🔒 CLOSED Set (Exploration Order)</div>
+            <div>{closed_chips}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
 # Dry Run Tab
 with tab_table:
