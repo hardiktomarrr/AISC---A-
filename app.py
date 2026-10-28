@@ -139,18 +139,18 @@ HEUR = {
     "F": 3, "G": 0, "H": 4, "I": 2
 }
 
-# Enlarged SVG coordinates (canvas: 960x560)
+# Enlarged coordinates filling the graph block (minimal margins)
 NODE_COORDS = {
-    "S": (480, 68),
-    "A": (240, 195),
-    "B": (720, 195),
-    "C": (120, 335),
-    "D": (360, 335),
-    "E": (600, 335),
-    "F": (840, 335),
-    "H": (120, 485),
-    "G": (480, 485),
-    "I": (840, 485)
+    "S": (430, 56),
+    "A": (205, 190),
+    "B": (655, 190),
+    "C": (75, 340),
+    "D": (315, 340),
+    "E": (545, 340),
+    "F": (785, 340),
+    "H": (75, 485),
+    "G": (430, 485),
+    "I": (785, 485)
 }
 
 START, GOAL = "S", "G"
@@ -443,12 +443,12 @@ def render_svg_tree(snap):
 
     svg = []
     
-    # SVG Definition & Styles (960x560 canvas)
-    svg.append('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" style="width:100%; height:100%; background: #0b0f19; border-radius: 14px; border: 1px solid #1e293b; box-shadow: 0 10px 35px rgba(0,0,0,0.6);">')
+    # SVG Definition & Styles (tight viewBox eliminating margins)
+    svg.append('<svg xmlns="http://www.w3.org/2000/svg" viewBox="30 4 800 520" style="width:100%; height:100%; background: #0b0f19; border-radius: 14px; border: 1px solid #1e293b; box-shadow: 0 10px 35px rgba(0,0,0,0.6);">')
     svg.append('<defs>')
-    svg.append('<marker id="arrow" viewBox="0 0 10 10" refX="32" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#475569"/></marker>')
-    svg.append('<marker id="arrow-gold" viewBox="0 0 10 10" refX="32" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#fbbf24"/></marker>')
-    svg.append('<marker id="arrow-active" viewBox="0 0 10 10" refX="32" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#f97316"/></marker>')
+    svg.append('<marker id="arrow" viewBox="0 0 10 10" refX="36" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#475569"/></marker>')
+    svg.append('<marker id="arrow-gold" viewBox="0 0 10 10" refX="36" refY="5" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse"><path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#fbbf24"/></marker>')
+    svg.append('<marker id="arrow-active" viewBox="0 0 10 10" refX="36" refY="5" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse"><path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#f97316"/></marker>')
     svg.append('<filter id="glow-gold" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>')
     svg.append('<filter id="glow-orange" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>')
     svg.append('</defs>')
@@ -464,17 +464,17 @@ def render_svg_tree(snap):
             
             if is_path:
                 stroke_color = "#fbbf24"
-                stroke_width = "4.5"
+                stroke_width = "4.8"
                 marker = "url(#arrow-gold)"
                 filter_attr = 'filter="url(#glow-gold)"'
             elif is_active:
                 stroke_color = "#f97316"
-                stroke_width = "4"
+                stroke_width = "4.2"
                 marker = "url(#arrow-active)"
                 filter_attr = 'filter="url(#glow-orange)"'
             else:
                 stroke_color = "#334155"
-                stroke_width = "2.4"
+                stroke_width = "2.6"
                 marker = "url(#arrow)"
                 filter_attr = ""
 
@@ -483,8 +483,8 @@ def render_svg_tree(snap):
             # Edge Cost Label
             mx, my = (x1 + x2) / 2, (y1 + y2) / 2
             ox, oy = (my - y1) * 0.08, (x1 - mx) * 0.08
-            svg.append(f'<rect x="{mx + ox - 14}" y="{my + oy - 12}" width="28" height="24" rx="6" fill="#0f172a" stroke="{stroke_color}" stroke-width="1.2"/>')
-            svg.append(f'<text x="{mx + ox}" y="{my + oy + 4}" fill="#f1f5f9" font-size="13" font-weight="bold" font-family="system-ui, sans-serif" text-anchor="middle">{cost}</text>')
+            svg.append(f'<rect x="{mx + ox - 15}" y="{my + oy - 13}" width="30" height="26" rx="6" fill="#0f172a" stroke="{stroke_color}" stroke-width="1.3"/>')
+            svg.append(f'<text x="{mx + ox}" y="{my + oy + 5}" fill="#f1f5f9" font-size="14" font-weight="bold" font-family="system-ui, sans-serif" text-anchor="middle">{cost}</text>')
 
     # Draw Nodes
     for node, (x, y) in NODE_COORDS.items():
@@ -530,23 +530,23 @@ def render_svg_tree(snap):
 
         # Outer Pulsing Ring for Active Node
         if node == curr_n and snap["event_kind"] not in ("ready", "done"):
-            svg.append(f'<circle cx="{x}" cy="{y}" r="38" fill="none" stroke="#f97316" stroke-width="2.5" stroke-dasharray="5,5" opacity="0.9"/>')
+            svg.append(f'<circle cx="{x}" cy="{y}" r="44" fill="none" stroke="#f97316" stroke-width="2.5" stroke-dasharray="5,5" opacity="0.9"/>')
 
-        # Node Circle (enlarged r=28)
-        svg.append(f'<circle cx="{x}" cy="{y}" r="28" fill="{bg_color}" stroke="{border_color}" stroke-width="3" {glow}/>')
+        # Node Circle (enlarged r=32)
+        svg.append(f'<circle cx="{x}" cy="{y}" r="32" fill="{bg_color}" stroke="{border_color}" stroke-width="3" {glow}/>')
         
         # Node Name & Heuristic inside circle
-        svg.append(f'<text x="{x}" y="{y - 2}" fill="{text_color}" font-size="17" font-weight="900" font-family="system-ui, sans-serif" text-anchor="middle">{node}</text>')
-        svg.append(f'<text x="{x}" y="{y + 15}" fill="{text_color}" font-size="11" font-weight="600" font-family="system-ui, sans-serif" text-anchor="middle" opacity="0.9">h={h_val}</text>')
+        svg.append(f'<text x="{x}" y="{y - 2}" fill="{text_color}" font-size="19" font-weight="900" font-family="system-ui, sans-serif" text-anchor="middle">{node}</text>')
+        svg.append(f'<text x="{x}" y="{y + 16}" fill="{text_color}" font-size="12.5" font-weight="600" font-family="system-ui, sans-serif" text-anchor="middle" opacity="0.9">h={h_val}</text>')
 
         # Floating Badge showing g and f values if known
         if known_g is not None:
             f_val = known_g + h_val
-            badge_y = y - 44
+            badge_y = y - 48
             badge_text = f"g={known_g} | f={f_val}"
-            badge_w = 76
-            svg.append(f'<rect x="{x - badge_w/2}" y="{badge_y}" width="{badge_w}" height="20" rx="10" fill="#030712" stroke="{border_color}" stroke-width="1.5"/>')
-            svg.append(f'<text x="{x}" y="{badge_y + 14}" fill="#f8fafc" font-size="10.5" font-weight="bold" font-family="monospace" text-anchor="middle">{badge_text}</text>')
+            badge_w = 82
+            svg.append(f'<rect x="{x - badge_w/2}" y="{badge_y}" width="{badge_w}" height="22" rx="11" fill="#030712" stroke="{border_color}" stroke-width="1.5"/>')
+            svg.append(f'<text x="{x}" y="{badge_y + 15}" fill="#f8fafc" font-size="11.5" font-weight="bold" font-family="monospace" text-anchor="middle">{badge_text}</text>')
 
     svg.append('</svg>')
     return "".join(svg)
@@ -626,8 +626,8 @@ with tab_viz:
     m3.metric("Heuristic: h(n)", snap["metrics"]["h"])
     m4.metric("Priority: f(n) = g + h", snap["metrics"]["f"])
 
-    # Two Column Layout: Enlarged Graph on Left (65%), Data Panels on Right (35%)
-    col_tree, col_panels = st.columns([1.9, 1.1], gap="medium")
+    # Two Column Layout: Enlarged Graph on Left (~67%), Data Panels on Right (~33%)
+    col_tree, col_panels = st.columns([2.0, 1.0], gap="medium")
 
     with col_tree:
         # Render enlarged hardware-accelerated SVG via iframe component to prevent ANY markdown escaping/code blocks
@@ -656,7 +656,7 @@ with tab_viz:
         </body>
         </html>
         """
-        components.html(html_wrapper, height=560, scrolling=False)
+        components.html(html_wrapper, height=580, scrolling=False)
         st.caption(f"📍 Event {st.session_state.step_idx} of {TOTAL_STEPS} | Start: S | Goal: G | Optimal Cost = 9")
 
     with col_panels:
