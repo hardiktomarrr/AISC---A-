@@ -611,7 +611,7 @@ st.sidebar.markdown("""
 """)
 
 # Main Content Tabs
-tab_viz, tab_table, tab_viva = st.tabs(["🚀 Interactive Visualizer", "📊 Dry Run Table", "🎓 Viva & Theory Guide"])
+tab_viz, tab_table = st.tabs(["🚀 Interactive Visualizer", "📊 Dry Run Table"])
 
 snap = SNAPSHOTS[st.session_state.step_idx]
 
@@ -714,48 +714,6 @@ with tab_table:
     """)
     st.success("✅ **Final Optimal Path:** `S → A → D → G` with total cost **9**.")
 
-# Viva Guide Tab
-with tab_viva:
-    st.markdown("### 🎓 Viva Preparation & Core Theory")
-    
-    with st.expander("1. What is the A* Search Algorithm?", expanded=True):
-        st.write("""
-        A* is an **informed (heuristic) best-first search algorithm** that finds the lowest-cost path from a start node to a goal node.
-        At each step, it chooses to expand the node $n$ with the minimum evaluation function:
-        $$f(n) = g(n) + h(n)$$
-        - $g(n)$: The exact cost paid to reach node $n$ from the start.
-        - $h(n)$: The estimated (heuristic) remaining cost from $n$ to the goal.
-        - $f(n)$: The estimated total cost of the path passing through $n$.
-        """)
-
-    with st.expander("2. What are Admissibility and Consistency?"):
-        st.write("""
-        - **Admissible Heuristic:** $h(n) \\le h^*(n)$ for all nodes $n$. The heuristic never overestimates the true cost to reach the goal.
-        - **Consistent (Monotone) Heuristic:** For every edge $(n, m)$ with cost $c(n, m)$:
-          $$h(n) \\le c(n, m) + h(m)$$
-          Consistency implies admissibility. With a consistent heuristic, the first time a node is expanded from `OPEN`, its $g$-value is guaranteed to be optimal. Thus, closed nodes never need to be reopened!
-        """)
-
-    with st.expander("3. Why did A* not stop when G was first discovered at Step 5?"):
-        st.write("""
-        At Step 5, goal $G$ was discovered through $E$ with cost $g(G) = 10$. However, **A* only checks the goal condition when a node is selected (popped) from OPEN**, not when it is generated/discovered.
-        Because node $D$ had a lower priority ($f(D) = 9$), $D$ was popped next, which discovered the cheaper path to $G$ with cost $9$.
-        """)
-
-    with st.expander("4. How does Python's `heapq` handle decreasing key / duplicate entries?"):
-        st.write("""
-        Python's standard `heapq` module does not support an $O(\\log n)$ `decrease-key` operation.
-        When a cheaper path to an existing node is found, the program pushes the new `(new_f, node)` tuple into the heap and keeps the old entry.
-        When the old entry is eventually popped later, the code checks:
-        `if n in closed: continue`
-        and skips it. This is known as **lazy deletion**.
-        """)
-
-    with st.expander("5. Time and Space Complexity"):
-        st.write("""
-        - **Worst-case Time Complexity:** $O(b^d)$ where $b$ is the branching factor and $d$ is the depth of the optimal solution.
-        - **Worst-case Space Complexity:** $O(b^d)$ because A* retains all generated nodes in memory (`OPEN` and `CLOSED`). Memory is the primary practical bottleneck for A*.
-        """)
 
 # Handle Auto-play looping
 if st.session_state.playing:
